@@ -145,7 +145,19 @@
 
 
 <script>
-if ('serviceWorker' in navigator) {
+const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec";
+
+function buscarDados() {
+  fetch(URL_DO_SCRIPT)
+    .then(response => response.json())
+    .then(dados => {
+      console.log("Dados recebidos do Google:", dados);
+      // Aqui você usa o JS para exibir os dados na tela da sua PWA
+    })
+    .catch(erro => console.error("Erro ao conectar com Apps Script:", erro));
+}
+  
+  if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js')
     .then(() => console.log('✅ SW registrado'))
     .catch(err => console.error('❌ SW erro', err));
