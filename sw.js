@@ -1,0 +1,21 @@
+{
+  "name": "Transporte DAE",
+  "short_name": "DAE Rota",
+  "display": "standalone",
+  "start_url": "./",
+  "scope": "./",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "icons": [
+    {
+      "src": "https://daevg.com.br/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://daevg.com.br/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
