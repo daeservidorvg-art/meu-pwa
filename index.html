@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <link rel="manifest" href="manifest.json">
+
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DAE Rota">
+  <link rel="apple-touch-icon" href="https://daevg.com.br/favicon.png">
+
+  <style>
+     body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background-color: #f4f4f4; display: flex; flex-direction: column; align-items: center; min-height: calc(100vh - 40px); justify-content: flex-start; }
+        .logo-container { text-align: center; margin-bottom: 15px; }
+        .logo { max-width: 120px; height: auto; }
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px; width: 100%; box-sizing: border-box; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; font-size: 20px; }
+        .form-section { border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 10px; background-color: #f9f9f9; }
+        .form-section h3 { margin-top: 0; color: #555; border-bottom: 2px solid #007bff; padding-bottom: 5px; font-size: 16px; }
+        .section-saida h3 { border-bottom-color: #4CAF50; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #007bff; font-size: 13px; }
+        .section-saida label { color: #4CAF50; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; background-color: white; }
+        button { background-color: #4CAF50; color: white; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; font-weight: bold; transition: 0.3s; }
+        .btn-retorno { background-color: #007bff; }
+        button:disabled { background-color: #ccc !important; color: #666 !important; cursor: not-allowed; opacity: 0.8; }
+        
+        /* Status e Alertas */
+        .status-rastreio { display: none; background: #e8f5e9; color: #2e7d32; padding: 12px; border-radius: 5px; margin-bottom: 15px; font-size: 13px; border-left: 4px solid #4caf50; font-weight: bold; text-align: center; }
+        .alerta-permanencia { display: none; background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeeba; text-align: center; font-weight: bold; font-size: 13px; }
+        .ponto-vivo { height: 10px; width: 10px; background-color: #4caf50; border-radius: 50%; display: inline-block; margin-right: 8px; animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+    
+
+
+
+
+    
+    
+    
+    
+    
+    
+    /* BANNER INSTALL */
+    #installBanner{
+      position:fixed;
+      bottom:20px;
+      left:20px;
+      right:20px;
+      background:#007bff;
+      color:#fff;
+      padding:12px;
+      border-radius:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      z-index:9999;
+    }
+    #installBanner button{
+      background:#fff;
+      color:#007bff;
+      border:0;
+      padding:6px 10px;
+      border-radius:6px;
+      font-weight:bold;
+    }
+  </style>
+</head>
+
+<body>
+<img src="https://daevg.com.br/assets/dae-logo.svg" class="logo">
+
+<div class="container">
+  <h2>Registro de Hodômetro</h2>
+
+  <div id="status" class="status">📍 Viagem Iniciada...</div>
+  
+  
+
+        <!-- SAÍDA -->
+  <div id="secaoSaida" class="form-section section-saida">
+    <h3>INICIAR VIAGEM</h3>
+    <form id="formSaida">
+      <label>Data</label><input type="date" id="dataSaida" required>
+      <label>Veículo</label><select id="veiculoSaida" required>
+        <option value="" disabled selected>Selecione</option>
+        <option value="QPD8801">QPD8801</option> <option value="SPH9D40">SPH9D40</option>
+                    <option value="SPH9D50">SPH9D50</option> <option value="SPI0E08">SPI0E08</option>
+                    <option value="SPI0E88">SPI0E88</option> <option value="SPI0E98">SPI0E98</option>
+                    <option value="SPI2F70">SPI2F70</option> <option value="SPI2F90">SPI2F90</option>
+                    <option value="SPI5F27">SPI5F27</option> <option value="SPI5F87">SPI5F87</option>
+                    <option value="SPI5F97">SPI5F97</option> <option value="SPI5G17">SPI5G17</option>
+                    <option value="SPI5G37">SPI5G37</option> <option value="SPI5G47">SPI5G47</option>
+                    <option value="SPI5G57">SPI5G57</option> <option value="SPI5G77">SPI5G77</option>
+                    <option value="SPI5G87">SPI5G87</option> <option value="SPI6A40">SPI6A40</option>
+                    <option value="SPJ5J29">SPJ5J29</option> <option value="SPL5B38">SPL5B38</option>
+                    <option value="SPM1A14">SPM1A14</option> <option value="SPM2F97">SPM2F97</option>
+                    <option value="SPM3F57">SPM3F57</option> <option value="SPM4F06">SPM4F06</option>
+                    <option value="SPM4F36">SPM4F36</option> <option value="SPN0E04">SPN0E04</option>
+                    <option value="SPN0E24">SPN0E24</option> <option value="SPN0E44">SPN0E44</option>
+                    <option value="SPN0E74">SPN0E74</option> <option value="SPN0F04">SPN0F04</option>
+                    <option value="SPN0F24">SPN0F24</option> <option value="SPN0F64">SPN0F64</option>
+                    <option value="SPN0F84">SPN0F84</option> <option value="SPN1A57">SPN1A57</option>
+                    <option value="SPN2D35">SPN2D35</option> <option value="SPN7D11">SPN7D11</option>
+                    <option value="SPN7D31">SPN7D31</option> <option value="SPN9G06">SPN9G06</option>
+                    <option value="SPQ2C69">SPQ2C69</option> <option value="SPQ2D99">SPQ2D99</option>
+                    <option value="SPQ2G29">SPQ2G29</option> <option value="SPQ2H09">SPQ2H09</option>
+                    <option value="SPQ2H89">SPQ2H89</option> <option value="SPQ2I29">SPQ2I29</option>
+                    <option value="SPQ2I59">SPQ2I59</option> <option value="SPQ2I69">SPQ2I69</option>
+                    <option value="SPQ4A97">SPQ4A97</option> <option value="SPQ5C07">SPQ5C07</option>
+                    <option value="SPQ5C27">SPQ5C27</option> <option value="SPQ5C37">SPQ5C37</option>
+                    <option value="SPQ5C47">SPQ5C47</option> <option value="SPQ5C57">SPQ5C57</option>
+                    <option value="SPQ5C67">SPQ5C67</option> <option value="SPQ5E97">SPQ5E97</option>
+                    <option value="SPQ6G69">SPQ6G69</option> <option value="SQC3D93">SQC3D93</option>
+                    <option value="SQC3E33">SQC3E33</option> <option value="SQC3E43">SQC3E43</option>
+                    <option value="SQF0G23">SQF0G23</option> <option value="SWM0D51">SWM0D51</option>
+      </select>
+      <label>Motorista</label><input id="motoristaSaida" required>
+      <label>Destino</label><input id="destinoSaida" required>
+      <label>Hora</label><input type="time" id="horaSaida" required>
+      <label>Hodômetro Inicial</label><input type="number" id="hodometroSaida" required>
+      <button id="btnSaida">Registrar Saída</button>
+    </form>
+  </div>
+
+  <!-- RETORNO -->
+  <div id="secaoRetorno" class="form-section" style="display:none">
+    <h3>FINALIZAR VIAGEM</h3>
+    <form id="formRetorno">
+      <label>Data</label><input type="date" id="dataRetorno" required>
+      <label>Hora</label><input type="time" id="horaRetorno" required>
+      <label>Hodômetro Final</label><input type="number" id="hodometroRetorno" required>
+      <button id="btnRetorno">Registrar Retorno</button>
+    </form>
+  </div>
+</div>
+ <div id="installBanner" style="display:none">
+  <span>📲 Instale o app para melhro funcionar </span>
+  <button id="btnInstall">Instalar</button>
+ </div>
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(() => console.log('✅ SW registrado'))
+    .catch(err => console.error('❌ SW erro', err));
+}
+
+
+/* ===== DETECÇÃO PWA ===== */
+function isPWAInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+
+/* ===== INSTALL PROMPT ===== */
+let deferredPrompt = null;
+const installBanner = document.getElementById('installBanner');
+const btnInstall = document.getElementById('btnInstall');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); // 🔴 OBRIGATÓRIO
+  deferredPrompt = e;
+
+  if (!isPWAInstalled()) {
+    installBanner.style.display = 'flex';
+  }
+});
+
+btnInstall.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+
+  deferredPrompt = null;
+  installBanner.style.display = 'none';
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('✅ App instalado');
+  installBanner.style.display = 'none';
+});
+
+/* ===== GPS / ROTA ===== */
+let rota=[],watchId=null,enviandoSaida=false,enviandoRetorno=false;
+
+function iniciarGPS(){
+  if(watchId) return;
+  watchId=navigator.geolocation.watchPosition(p=>{
+    rota.push({lat:p.coords.latitude,lon:p.coords.longitude,t:Date.now()});
+    localStorage.setItem('rota',JSON.stringify(rota));
+  },null,{enableHighAccuracy:true,maximumAge:0,timeout:10000});
+}
+
+window.onload=()=>{
+  const agora=new Date();
+  dataSaida.valueAsDate=agora;
+  dataRetorno.valueAsDate=agora;
+
+  if(localStorage.getItem('viagemAtiva')){
+    rota=JSON.parse(localStorage.getItem('rota')||'[]');
+    formSaida.style.display='none';
+    formRetorno.style.display='block';
+    status.style.display='block';
+    iniciarGPS();
+  }
+};
+
+/* ===== SAÍDA ===== */
+formSaida.onsubmit=e=>{
+  e.preventDefault();
+  if(!isPWAInstalled()){
+    alert('📲 Instale o app para iniciar a viagem');
+    showInstallBanner();
+    return;
+  }
+  if(enviandoSaida) return;
+  enviandoSaida=true;btnSaida.disabled=true;
+
+  rota=[];localStorage.setItem('rota','[]');
+
+  navigator.geolocation.getCurrentPosition(p=>{
+    google.script.run.registrarSaida({
+      dataSaida:dataSaida.value,
+      veiculo:veiculoSaida.value,
+      motorista:motoristaSaida.value,
+      destino:destinoSaida.value,
+      horaSaida:horaSaida.value,
+      hodometroSaida:hodometroSaida.value,
+      localizacaoSaida:`${p.coords.latitude},${p.coords.longitude}`
+    });
+    localStorage.setItem('viagemAtiva',veiculoSaida.value);
+    formSaida.style.display='none';
+    formRetorno.style.display='block';
+    status.style.display='block';
+    iniciarGPS();
+  });
+};
+
+/* ===== RETORNO ===== */
+formRetorno.onsubmit=e=>{
+  e.preventDefault();
+  if(enviandoRetorno) return;
+  enviandoRetorno=true;btnRetorno.disabled=true;
+
+  navigator.geolocation.getCurrentPosition(p=>{
+    google.script.run.registrarRetorno({
+      veiculo:localStorage.getItem('viagemAtiva'),
+      dataRetorno:dataRetorno.value,
+      horaRetorno:horaRetorno.value,
+      hodometroRetorno:hodometroRetorno.value,
+      localizacaoRetorno:`${p.coords.latitude},${p.coords.longitude}`,
+      historicoRota:JSON.stringify(JSON.parse(localStorage.getItem('rota')||'[]'))
+    });
+    localStorage.clear();
+    location.reload();
+  });
+
+  
+};
+
+
+function mostrarRetorno() {
+  secaoSaida.style.display = 'none';
+  secaoRetorno.style.display = 'block';
+  status.style.display = 'block';
+}
+
+
+
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const dLat = (lat2-lat1)*Math.PI/180;
+        const dLon = (lon2-lon1)*Math.PI/180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+</script>
+
+
+
+</body>
+</html>
