@@ -179,6 +179,32 @@ btnInstall.addEventListener('click', async () => {
   installBanner.style.display = 'none';
 });
 
+  async function buscarDados() {
+  try {
+    const response = await fetch(URL_DO_SCRIPT);
+    const dados = await response.json();
+    
+    console.log("Dados da Planilha:", dados);
+    
+    // Exemplo: Se você tiver uma div com id="listaViagens"
+    const lista = document.getElementById('listaViagens');
+    if (lista) {
+      lista.innerHTML = dados.map(linha => `
+        <div style="border-bottom: 1px solid #ccc; padding: 5px;">
+          <strong>Veículo:</strong> ${linha[1]} | 
+          <strong>Motorista:</strong> ${linha[2]} <br>
+          <small>Saída: ${linha[4]} - Destino: ${linha[3]}</small>
+        </div>
+      `).join('');
+    }
+  } catch (erro) {
+    console.error("Erro ao buscar dados:", erro);
+  }
+}
+
+// Chame a função quando a página carregar
+window.addEventListener('load', buscarDados);
+
 /* ===== GPS / ROTA ===== */
 let rota = [], watchId = null;
 let enviandoSaida = false, enviandoRetorno = false;
