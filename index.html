@@ -145,40 +145,27 @@
 
 
 <script>
-const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec";
+const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec"; // URL que termina em /exec
 
-function buscarDados() {
-  fetch(URL_DO_SCRIPT)
-    .then(response => response.json())
-    .then(dados => {
-      console.log("Dados recebidos do Google:", dados);
-      // Aqui você usa o JS para exibir os dados na tela da sua PWA
-    })
-    .catch(erro => console.error("Erro ao conectar com Apps Script:", erro));
-}
-  
-  if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
+/* ===== REGISTRO DO SERVICE WORKER ===== */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js') // Adicionado ./ para garantir raiz
     .then(() => console.log('✅ SW registrado'))
     .catch(err => console.error('❌ SW erro', err));
 }
 
-
-/* ===== DETECÇÃO PWA ===== */
+/* ===== DETECÇÃO PWA E INSTALAÇÃO ===== */
 function isPWAInstalled() {
-  return window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true;
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 
-/* ===== INSTALL PROMPT ===== */
 let deferredPrompt = null;
 const installBanner = document.getElementById('installBanner');
 const btnInstall = document.getElementById('btnInstall');
 
 window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault(); // 🔴 OBRIGATÓRIO
+  e.preventDefault();
   deferredPrompt = e;
-
   if (!isPWAInstalled()) {
     installBanner.style.display = 'flex';
   }
@@ -186,103 +173,118 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 btnInstall.addEventListener('click', async () => {
   if (!deferredPrompt) return;
-
   deferredPrompt.prompt();
   await deferredPrompt.userChoice;
-
   deferredPrompt = null;
   installBanner.style.display = 'none';
 });
 
-window.addEventListener('appinstalled', () => {
-  console.log('✅ App instalado');
-  installBanner.style.display = 'none';
-});
-
 /* ===== GPS / ROTA ===== */
-let rota=[],watchId=null,enviandoSaida=false,enviandoRetorno=false;
+let rota = [], watchId = null;
+let enviandoSaida = false, enviandoRetorno = false;
 
-function iniciarGPS(){
-  if(watchId) return;
-  watchId=navigator.geolocation.watchPosition(p=>{
-    rota.push({lat:p.coords.latitude,lon:p.coords.longitude,t:Date.now()});
-    localStorage.setItem('rota',JSON.stringify(rota));
-  },null,{enableHighAccuracy:true,maximumAge:0,timeout:10000});
+function iniciarGPS() {
+  if (watchId) return;
+  watchId = navigator.geolocation.watchPosition(p => {
+    rota.push({ lat: p.coords.latitude, lon: p.coords.longitude, t: Date.now() });
+    localStorage.setItem('rota', JSON.stringify(rota));
+  }, null, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
 }
 
-window.onload=()=>{
-  const agora=new Date();
-  dataSaida.valueAsDate=agora;
-  dataRetorno.valueAsDate=agora;
+window.onload = () => {
+  const agora = new Date();
+  document.getElementById('dataSaida').valueAsDate = agora;
+  document.getElementById('dataRetorno').valueAsDate = agora;
 
-  if(localStorage.getItem('viagemAtiva')){
-    rota=JSON.parse(localStorage.getItem('rota')||'[]');
-    formSaida.style.display='none';
-    formRetorno.style.display='block';
-    status.style.display='block';
+  if (localStorage.getItem('viagemAtiva')) {
+    rota = JSON.parse(localStorage.getItem('rota') || '[]');
+    document.getElementById('formSaida').style.display = 'none';
+    document.getElementById('formRetorno').style.display = 'block';
+    document.getElementById('status').style.display = 'block';
     iniciarGPS();
   }
 };
 
+/* ===== FUNÇÃO GENÉRICA PARA ENVIAR DADOS (MUDANÇA CHAVE) ===== */
+async function enviarParaGoogle(dados) {
+  // Substitui o google.script.run
+  return fetch(URL_DO_SCRIPT, {
+    method: 'POST',
+    mode: 'no-cors', // Necessário para Apps Script
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dados)
+  });
+}
+
 /* ===== SAÍDA ===== */
-formSaida.onsubmit=e=>{
+document.getElementById('formSaida').onsubmit = async (e) => {
   e.preventDefault();
-  if(!isPWAInstalled()){
-    alert('📲 Instale o app para iniciar a viagem');
-    showInstallBanner();
-    return;
-  }
-  if(enviandoSaida) return;
-  enviandoSaida=true;btnSaida.disabled=true;
+  
+  if (enviandoSaida) return;
+  enviandoSaida = true;
+  const btn = document.getElementById('btnSaida');
+  btn.disabled = true;
 
-  rota=[];localStorage.setItem('rota','[]');
+  navigator.geolocation.getCurrentPosition(async (p) => {
+    const payload = {
+      action: 'saida', // Avisa o doPost qual função usar
+      dataSaida: document.getElementById('dataSaida').value,
+      veiculo: document.getElementById('veiculoSaida').value,
+      motorista: document.getElementById('motoristaSaida').value,
+      destino: document.getElementById('destinoSaida').value,
+      horaSaida: document.getElementById('horaSaida').value,
+      hodometroSaida: document.getElementById('hodometroSaida').value,
+      localizacaoSaida: `${p.coords.latitude},${p.coords.longitude}`
+    };
 
-  navigator.geolocation.getCurrentPosition(p=>{
-    google.script.run.registrarSaida({
-      dataSaida:dataSaida.value,
-      veiculo:veiculoSaida.value,
-      motorista:motoristaSaida.value,
-      destino:destinoSaida.value,
-      horaSaida:horaSaida.value,
-      hodometroSaida:hodometroSaida.value,
-      localizacaoSaida:`${p.coords.latitude},${p.coords.longitude}`
-    });
-    localStorage.setItem('viagemAtiva',veiculoSaida.value);
-    formSaida.style.display='none';
-    formRetorno.style.display='block';
-    status.style.display='block';
-    iniciarGPS();
+    try {
+      await enviarParaGoogle(payload);
+      localStorage.setItem('viagemAtiva', payload.veiculo);
+      localStorage.setItem('rota', '[]');
+      
+      alert('✅ Saída registrada!');
+      location.reload(); // Recarrega para alternar os formulários
+    } catch (err) {
+      alert('❌ Erro ao enviar: ' + err);
+      enviandoSaida = false;
+      btn.disabled = false;
+    }
   });
 };
 
 /* ===== RETORNO ===== */
-formRetorno.onsubmit=e=>{
+document.getElementById('formRetorno').onsubmit = async (e) => {
   e.preventDefault();
-  if(enviandoRetorno) return;
-  enviandoRetorno=true;btnRetorno.disabled=true;
-
-  navigator.geolocation.getCurrentPosition(p=>{
-    google.script.run.registrarRetorno({
-      veiculo:localStorage.getItem('viagemAtiva'),
-      dataRetorno:dataRetorno.value,
-      horaRetorno:horaRetorno.value,
-      hodometroRetorno:hodometroRetorno.value,
-      localizacaoRetorno:`${p.coords.latitude},${p.coords.longitude}`,
-      historicoRota:JSON.stringify(JSON.parse(localStorage.getItem('rota')||'[]'))
-    });
-    localStorage.clear();
-    location.reload();
-  });
-
   
+  if (enviandoRetorno) return;
+  enviandoRetorno = true;
+  const btn = document.getElementById('btnRetorno');
+  btn.disabled = true;
+
+  navigator.geolocation.getCurrentPosition(async (p) => {
+    const payload = {
+      action: 'retorno',
+      veiculo: localStorage.getItem('viagemAtiva'),
+      dataRetorno: document.getElementById('dataRetorno').value,
+      horaRetorno: document.getElementById('horaRetorno').value,
+      hodometroRetorno: document.getElementById('hodometroRetorno').value,
+      localizacaoRetorno: `${p.coords.latitude},${p.coords.longitude}`,
+      historicoRota: localStorage.getItem('rota') || '[]'
+    };
+
+    try {
+      await enviarParaGoogle(payload);
+      alert('✅ Viagem finalizada com sucesso!');
+      localStorage.clear();
+      location.reload();
+    } catch (err) {
+      alert('❌ Erro ao finalizar: ' + err);
+      enviandoRetorno = false;
+      btn.disabled = false;
+    }
+  });
 };
 
-
-function mostrarRetorno() {
-  secaoSaida.style.display = 'none';
-  secaoRetorno.style.display = 'block';
-  status.style.display = 'block';
-}
 
 
 
