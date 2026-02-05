@@ -38,12 +38,12 @@
   <div id="status" class="status">📍 Viagem Iniciada...</div>
 
   <div id="secaoSaida" class="form-section section-saida">
-    <h3>INICIAR VIAGEM</h3>
-    <form id="formSaida">
-      <label>Data</label><input type="date" id="dataSaida" required>
-      <label>Veículo</label>
-      <select id="veiculoSaida" required>
-        <option value="" disabled selected>Selecione</option>
+  <h3>INICIAR VIAGEM</h3>
+  <form id="formSaida">
+    <label for="dataSaida">Data</label>   <input type="date" id="dataSaida" required>
+    <label for="veiculoSaida">Veículo</label>   <select id="veiculoSaida" required>
+      <option value="" disabled selected>Selecione</option>
+      <option value="" disabled selected>Selecione</option>
         <option value="QPD8801">QPD8801</option> <option value="SPH9D40">SPH9D40</option>
         <option value="SPH9D50">SPH9D50</option> <option value="SPI0E08">SPI0E08</option>
         <option value="SPI0E88">SPI0E88</option> <option value="SPI0E98">SPI0E98</option>
@@ -73,25 +73,25 @@
         <option value="SPQ5C67">SPQ5C67</option> <option value="SPQ5E97">SPQ5E97</option>
         <option value="SPQ6G69">SPQ6G69</option> <option value="SQC3D93">SQC3D93</option>
         <option value="SQC3E33">SQC3E33</option> <option value="SQC3E43">SQC3E43</option>
-        <option value="SQF0G23">SQF0G23</option> <option value="SWM0D51">SWM0D51</option>
-      </select>
-      <label>Motorista</label><input id="motoristaSaida" required>
-      <label>Destino</label><input id="destinoSaida" required>
-      <label>Hora</label><input type="time" id="horaSaida" required>
-      <label>Hodômetro Inicial</label><input type="number" id="hodometroSaida" required>
-      <button type="submit" id="btnSaida">Registrar Saída</button>
-    </form>
-  </div>
+        <option value="SQF0G23">SQF0G23</option> <option value="SWM0D51">SWM0D51</option>    
+        </select>
+
+    <label for="motoristaSaida">Motorista</label>    <input id="motoristaSaida" required>
+    <label for="destinoSaida">Destino</label>     <input id="destinoSaida" required>
+    <label for="horaSaida">Hora</label>     <input type="time" id="horaSaida" required>
+    <label for="hodometroSaida">Hodômetro Inicial</label>    <input type="number" id="hodometroSaida" required>
+    <button type="submit" id="btnSaida">Registrar Saída</button>
+  </form>
+</div>
 
   <div id="secaoRetorno" class="form-section" style="display:none">
-    <h3>FINALIZAR VIAGEM</h3>
-    <form id="formRetorno">
-      <label>Data</label><input type="date" id="dataRetorno" required>
-      <label>Hora</label><input type="time" id="horaRetorno" required>
-      <label>Hodômetro Final</label><input type="number" id="hodometroRetorno" required>
-      <button type="submit" id="btnRetorno">Registrar Retorno</button>
-    </form>
-  </div>
+  <h3>FINALIZAR VIAGEM</h3>
+  <form id="formRetorno">
+    <label for="dataRetorno">Data</label>     <input type="date" id="dataRetorno" required>
+    <label for="horaRetorno">Hora</label>    <input type="time" id="horaRetorno" required>
+    <label for="hodometroRetorno">Hodômetro Final</label>    <input type="number" id="hodometroRetorno" required>
+    <button type="submit" id="btnRetorno">Registrar Retorno</button>
+  </form>
 </div>
 
 <div id="installBanner">
