@@ -1,6 +1,6 @@
 {
   "name": "Transporte DAE",
-  "short_name": "DAE Rota",
+  "short_name": "Diário de Bordo",
   "display": "standalone",
   "start_url": "./",
   "scope": "./",
