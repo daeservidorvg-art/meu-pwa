@@ -102,89 +102,98 @@
     <label for="hodometroRetorno">Hodômetro Final</label>    <input type="number" id="hodometroRetorno" required>
     <button type="submit" id="btnRetorno">Registrar Retorno</button>
   </form>
-</div>
-
+ </div>
+<div style="text-align:center; margin-top:20px;">
+    <small style="color:#999; cursor:pointer;" onclick="forçarAtualizacao()">
+      🔄 Versão 2.0 (Toque para atualizar)
+    </small>
+  </div>
 <div id="installBanner">
   <span>📲 Instale o app para melhor funcionar</span>
   <button id="btnInstall">Instalar</button>
 </div>
 
 <script>
+const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec";
 let watchId = null;
 let wakeLock = null;
 
+// 1. Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+
+// 2. Wake Lock (Impede tela de apagar)
 async function ativarWakeLock() {
   try {
     if ('wakeLock' in navigator) {
       wakeLock = await navigator.wakeLock.request('screen');
-      console.log('Bloqueio de tela ativo: o GPS não vai dormir!');
     }
-  } catch (err) {
-    console.error(`${err.name}, ${err.message}`);
+  } catch (err) { console.log("WakeLock falhou"); }
+}
+
+// 3. Buscar Mensagens (Agora chamando o Google diretamente)
+function buscarMensagens() {
+  const placa = localStorage.getItem('viagemAtiva');
+  if (!placa) return;
+
+  // IMPORTANTE: Aqui usamos google.script.run apenas se estiver dentro do Apps Script
+  // Como você usa GitHub, usaremos um fetch especial ou manteremos google.script.run se for rodar no link do Google
+  if (typeof google !== 'undefined') {
+    google.script.run.withSuccessHandler(msg => {
+      const caixa = document.getElementById('caixaAviso');
+      if (msg && msg.trim() !== "") {
+        document.getElementById('textoAviso').innerText = msg;
+        caixa.style.display = 'block';
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } else {
+        caixa.style.display = 'none';
+      }
+    }).verificarMensagem(placa);
   }
 }
-    
-  const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec";
 
-// 1. Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').then(() => console.log('✅ SW OK'));
+// 4. GPS / Rastreio
+function iniciarRastreio() {
+  if (watchId) return;
+  ativarWakeLock();
+  document.getElementById('statusGPS').style.display = 'block';
+
+  watchId = setInterval(() => {
+    navigator.geolocation.getCurrentPosition(p => {
+      let rota = JSON.parse(localStorage.getItem('rota') || '[]');
+      rota.push({ lat: p.coords.latitude, lon: p.coords.longitude, t: Date.now() });
+      localStorage.setItem('rota', JSON.stringify(rota));
+      document.getElementById('contPonto').innerText = rota.length;
+    }, null, { enableHighAccuracy: true });
+  }, 120000); // 2 minutos
+
+  setInterval(buscarMensagens, 60000); // Check mensagens 1 min
 }
 
-// 2. Variáveis de Controle
-let rota = [], watchId = null;
-let enviandoSaida = false, enviandoRetorno = false;
-
-// 3. Inicialização
-window.addEventListener('load', () => {
+// 5. Inicialização da Página
+window.onload = () => {
   const agora = new Date();
   document.getElementById('dataSaida').valueAsDate = agora;
   document.getElementById('dataRetorno').valueAsDate = agora;
   
-  // Atualiza hora em tempo real
+  const placaAtiva = localStorage.getItem('viagemAtiva');
+  if (placaAtiva) {
+    document.getElementById('secaoSaida').style.display = 'none';
+    document.getElementById('secaoRetorno').style.display = 'block';
+    iniciarRastreio();
+    buscarMensagens();
+  }
+
+  // Relógio em tempo real
   setInterval(() => {
     const h = new Date().toTimeString().slice(0,5);
     if(document.getElementById('secaoSaida').style.display !== 'none') document.getElementById('horaSaida').value = h;
     if(document.getElementById('secaoRetorno').style.display !== 'none') document.getElementById('horaRetorno').value = h;
   }, 1000);
+};
 
-  // Verifica viagem ativa
-  if (localStorage.getItem('viagemAtiva')) {
-    mostrarLayoutRetorno();
-    iniciarGPS();
-  }
-});
-
-function mostrarLayoutRetorno() {
-  document.getElementById('secaoSaida').style.display = 'none';
-  document.getElementById('secaoRetorno').style.display = 'block';
-  document.getElementById('status').style.display = 'block';
-}
-function iniciarGPS() {
-  if (watchId !== null) return;
-
-  // Tenta manter a tela ativa (impede o celular de entrar em standby profundo)
-  ativarWakeLock(); 
-
-  // Em vez de esperar o GPS se mexer, nós perguntamos onde ele está a cada 2 minutos
-  // Isso ajuda a manter o processo do navegador "interessante" para o Android não matar
-  watchId = setInterval(() => {
-    navigator.geolocation.getCurrentPosition(p => {
-      rota = JSON.parse(localStorage.getItem('rota') || '[]');
-      rota.push({
-        lat: p.coords.latitude,
-        lon: p.coords.longitude,
-        t: Date.now()
-      });
-      localStorage.setItem('rota', JSON.stringify(rota));
-      
-      // Se o motorista abrir o app, ele verá que o ponto foi salvo
-      console.log("Ponto forçado registrado!");
-    }, null, { enableHighAccuracy: true });
-  }, 120000); // 120.000ms = 2 minutos
-}
- 
-// 4. Função de Envio (API)
+// 6. Envio de Dados (POST)
 async function enviarDados(dados) {
   return fetch(URL_DO_SCRIPT, {
     method: 'POST',
@@ -193,58 +202,11 @@ async function enviarDados(dados) {
     body: JSON.stringify(dados)
   });
 }
-
-  function buscarNovasMensagens() {
-  const placa = localStorage.getItem('viagemAtiva');
-  if (!placa) return;
-
-  google.script.run
-    .withSuccessHandler(msg => {
-      const caixa = document.getElementById('caixaAviso');
-      const texto = document.getElementById('textoAviso');
-      
-      if (msg && msg.trim() !== "") {
-        texto.innerText = msg;
-        caixa.style.display = 'block';
-        // Opcional: faz o celular vibrar para avisar que chegou mensagem
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      } else {
-        caixa.style.display = 'none';
-      }
-    })
-    .verificarMensagem(placa);
-}
-
-// Inicia a checagem a cada 5 minutos
-setInterval(buscarNovasMensagens, 300000);
-
-  window.onload = () => {
-  const ativa = localStorage.getItem('viagemAtiva');
-  if (ativa) {
-    document.getElementById('secaoSaida').style.display = 'none';
-    document.getElementById('secaoRetorno').style.display = 'block';
-    iniciarRastreio();
-    checkMensagens();
-  }
-};
-// Verifica se há uma nova versão e recarrega o app
-function forçarAtualizacao() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      for (let registration of registrations) {
-        registration.update();
-      }
-    });
-  }
-  // Recarrega a página limpando o cache
-  location.reload(true);
-}
   
   // 5. Lógica de Saída
+// 7. Eventos de Formulário
 document.getElementById('formSaida').onsubmit = async (e) => {
   e.preventDefault();
-  if (enviandoSaida) return;
-  enviandoSaida = true;
   const btn = document.getElementById('btnSaida');
   btn.disabled = true;
   btn.innerText = "Enviando...";
@@ -252,67 +214,42 @@ document.getElementById('formSaida').onsubmit = async (e) => {
   navigator.geolocation.getCurrentPosition(async (p) => {
     const payload = {
       action: 'saida',
-      dataSaida: document.getElementById('dataSaida').value,
       veiculo: document.getElementById('veiculoSaida').value,
       motorista: document.getElementById('motoristaSaida').value,
       destino: document.getElementById('destinoSaida').value,
+      dataSaida: document.getElementById('dataSaida').value,
       horaSaida: document.getElementById('horaSaida').value,
       hodometroSaida: document.getElementById('hodometroSaida').value,
       localizacaoSaida: `${p.coords.latitude},${p.coords.longitude}`
     };
 
-    try {
-      await enviarDados(payload);
-      localStorage.setItem('viagemAtiva', payload.veiculo); // Salva apenas o texto da placa
-      localStorage.setItem('rota', '[]');
-      alert('✅ Saída registrada com sucesso!');
-      location.reload(); 
-    } catch (err) {
-      alert('Erro ao enviar: ' + err);
-      enviandoSaida = false;
-      btn.disabled = false;
-      btn.innerText = "Registrar Saída";
-    }
-  }, () => {
-    alert('❌ GPS Necessário');
-    enviandoSaida = false;
-    btn.disabled = false;
+    await enviarDados(payload);
+    localStorage.setItem('viagemAtiva', payload.veiculo);
+    localStorage.setItem('rota', '[]');
+    location.reload();
   });
 };
 
-// 6. Lógica de Retorno
 document.getElementById('formRetorno').onsubmit = async (e) => {
   e.preventDefault();
-  if (enviandoRetorno) return;
-  enviandoRetorno = true;
   const btn = document.getElementById('btnRetorno');
   btn.disabled = true;
-  btn.innerText = "Finalizando...";
-
-  const placaAtiva = localStorage.getItem('viagemAtiva');
-  const historico = localStorage.getItem('rota') || '[]';
 
   navigator.geolocation.getCurrentPosition(async (p) => {
     const payload = {
       action: 'retorno',
-      veiculo: placaAtiva,
+      veiculo: localStorage.getItem('viagemAtiva'),
       dataRetorno: document.getElementById('dataRetorno').value,
       horaRetorno: document.getElementById('horaRetorno').value,
       hodometroRetorno: document.getElementById('hodometroRetorno').value,
       localizacaoRetorno: `${p.coords.latitude},${p.coords.longitude}`,
-      historicoRota: historico
+      historicoRota: localStorage.getItem('rota') || '[]'
     };
 
-    try {
-      await enviarDados(payload);
-      alert('✅ Viagem finalizada!');
-      localStorage.clear();
-      location.reload();
-    } catch (err) {
-      alert('Erro ao finalizar');
-      enviandoRetorno = false;
-      btn.disabled = false;
-    }
+    await enviarDados(payload);
+    localStorage.clear();
+    if (wakeLock) wakeLock.release();
+    location.reload();
   });
 };
 
