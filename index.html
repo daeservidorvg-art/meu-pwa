@@ -103,6 +103,7 @@
 </div>
 
 <script>
+let watchId = null;
 let wakeLock = null;
 
 async function ativarWakeLock() {
@@ -210,7 +211,18 @@ async function enviarDados(dados) {
 // Inicia a checagem a cada 5 minutos
 setInterval(buscarNovasMensagens, 300000);
 
-// 5. Lógica de Saída
+  window.onload = () => {
+  const ativa = localStorage.getItem('viagemAtiva');
+  if (ativa) {
+    document.getElementById('secaoSaida').style.display = 'none';
+    document.getElementById('secaoRetorno').style.display = 'block';
+    iniciarRastreio();
+    checkMensagens();
+  }
+};
+
+  
+  // 5. Lógica de Saída
 document.getElementById('formSaida').onsubmit = async (e) => {
   e.preventDefault();
   if (enviandoSaida) return;
