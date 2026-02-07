@@ -149,16 +149,30 @@ function mostrarLayoutRetorno() {
   document.getElementById('secaoRetorno').style.display = 'block';
   document.getElementById('status').style.display = 'block';
 }
-
 function iniciarGPS() {
-  if (watchId) return;
-  watchId = navigator.geolocation.watchPosition(p => {
-    rota = JSON.parse(localStorage.getItem('rota') || '[]');
-    rota.push({ lat: p.coords.latitude, lon: p.coords.longitude, t: Date.now() });
-    localStorage.setItem('rota', JSON.stringify(rota));
-  }, null, { enableHighAccuracy: true });
-}
+  if (watchId !== null) return;
 
+  // Tenta manter a tela ativa (impede o celular de entrar em standby profundo)
+  ativarWakeLock(); 
+
+  // Em vez de esperar o GPS se mexer, nós perguntamos onde ele está a cada 2 minutos
+  // Isso ajuda a manter o processo do navegador "interessante" para o Android não matar
+  watchId = setInterval(() => {
+    navigator.geolocation.getCurrentPosition(p => {
+      rota = JSON.parse(localStorage.getItem('rota') || '[]');
+      rota.push({
+        lat: p.coords.latitude,
+        lon: p.coords.longitude,
+        t: Date.now()
+      });
+      localStorage.setItem('rota', JSON.stringify(rota));
+      
+      // Se o motorista abrir o app, ele verá que o ponto foi salvo
+      console.log("Ponto forçado registrado!");
+    }, null, { enableHighAccuracy: true });
+  }, 120000); // 120.000ms = 2 minutos
+}
+ 
 // 4. Função de Envio (API)
 async function enviarDados(dados) {
   return fetch(URL_DO_SCRIPT, {
