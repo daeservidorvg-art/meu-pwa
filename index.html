@@ -100,7 +100,20 @@
 </div>
 
 <script>
-const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec";
+let wakeLock = null;
+
+async function ativarWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      console.log('Bloqueio de tela ativo: o GPS não vai dormir!');
+    }
+  } catch (err) {
+    console.error(`${err.name}, ${err.message}`);
+  }
+}
+    
+  const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec";
 
 // 1. Service Worker
 if ('serviceWorker' in navigator) {
