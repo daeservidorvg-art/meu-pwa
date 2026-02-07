@@ -139,21 +139,24 @@ function buscarMensagens() {
   const placa = localStorage.getItem('viagemAtiva');
   if (!placa) return;
 
-  // IMPORTANTE: Aqui usamos google.script.run apenas se estiver dentro do Apps Script
-  // Como você usa GitHub, usaremos um fetch especial ou manteremos google.script.run se for rodar no link do Google
-  if (typeof google !== 'undefined') {
-    google.script.run.withSuccessHandler(msg => {
+  // Faz uma requisição direta para o seu link do Google
+  fetch(URL_DO_SCRIPT + "?getMensagem=" + placa)
+    .then(response => response.text())
+    .then(msg => {
       const caixa = document.getElementById('caixaAviso');
-      if (msg && msg.trim() !== "") {
-        document.getElementById('textoAviso').innerText = msg;
+      const texto = document.getElementById('textoAviso');
+      
+      if (msg && msg.trim() !== "" && msg !== "undefined") {
+        texto.innerText = msg;
         caixa.style.display = 'block';
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       } else {
         caixa.style.display = 'none';
       }
-    }).verificarMensagem(placa);
-  }
+    })
+    .catch(err => console.log("Erro ao buscar mensagem: ", err));
 }
+    
 
 // 4. GPS / Rastreio
 function iniciarRastreio() {
