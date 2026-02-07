@@ -2,7 +2,7 @@
   "name": "Transporte DAE",
   "short_name": "Diário de Bordo",
   "display": "standalone",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
