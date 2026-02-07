@@ -27,19 +27,25 @@
     .status { display: none; background: #e8f5e9; color: #2e7d32; padding: 12px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-weight: bold; border-left: 4px solid #4caf50; }
     #installBanner { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #007bff; color: #fff; padding: 12px; border-radius: 10px; display: none; justify-content: space-between; align-items: center; z-index: 9999; }
     #installBanner button { background: #fff; color: #007bff; border: 0; padding: 6px 10px; border-radius: 6px; font-weight: bold; width: auto; }
+
+    /* Caixa de Aviso da Planilha */
+    #caixaAviso { display: none; background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeeba; font-weight: bold; text-align: center; width: 100%; box-sizing: border-box; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+    .status-gps { display: none; background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px; border-left: 4px solid #4caf50; font-weight: bold; width: 100%; text-align: center; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #007bff; font-size: 13px; }
+    input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+    
   </style>
 </head>
 
 <body>
 <img src="https://daevg.com.br/assets/dae-logo.svg" class="logo">
-
 <div class="container">
   <h2>Registro de Hodômetro</h2>
+  <div id="caixaAviso">⚠️ MENSAGEM: <span id="textoAviso"></span></div>
   <div id="status" class="status">📍 Viagem Iniciada...</div>
-  <div id="caixaAviso" style="display:none; background:#fff3cd; color:#856404; padding:15px; margin:10px; border-radius:8px; border:1px solid #ffeeba; font-weight:bold; text-align:center;">
-  ⚠️ AVISO: <span id="textoAviso"></span>
-  </div>
-
+  
   <div id="secaoSaida" class="form-section section-saida">
   <h3>INICIAR VIAGEM</h3>
   <form id="formSaida">
