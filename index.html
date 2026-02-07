@@ -135,28 +135,33 @@ async function ativarWakeLock() {
 }
 
 // 3. Buscar Mensagens (Agora chamando o Google diretamente)
-function buscarMensagens() {
+function buscarNovasMensagens() {
   const placa = localStorage.getItem('viagemAtiva');
   if (!placa) return;
 
-  // Faz uma requisição direta para o seu link do Google
+  // Usa o link .exec para buscar o texto da Coluna N
   fetch(URL_DO_SCRIPT + "?getMensagem=" + placa)
     .then(response => response.text())
     .then(msg => {
       const caixa = document.getElementById('caixaAviso');
       const texto = document.getElementById('textoAviso');
       
-      if (msg && msg.trim() !== "" && msg !== "undefined") {
+      // Se houver mensagem e não for erro/vazio
+      if (msg && msg.trim() !== "" && !msg.includes("<!DOCTYPE")) {
         texto.innerText = msg;
         caixa.style.display = 'block';
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Vibra o celular
       } else {
         caixa.style.display = 'none';
       }
     })
-    .catch(err => console.log("Erro ao buscar mensagem: ", err));
+    .catch(err => console.log("Erro ao buscar aviso: ", err));
 }
-    
+
+// Inicia a verificação a cada 60 segundos
+setInterval(buscarNovasMensagens, 60000);
+  
+  
 
 // 4. GPS / Rastreio
 function iniciarRastreio() {
