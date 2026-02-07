@@ -45,7 +45,11 @@
   <h2>Registro de Hodômetro</h2>
   <div id="caixaAviso">⚠️ MENSAGEM: <span id="textoAviso"></span></div>
   <div id="status" class="status">📍 Viagem Iniciada...</div>
-  
+  <div style="text-align:center; margin-top:20px;">
+  <small style="color:#999; cursor:pointer;" onclick="forçarAtualizacao()">
+    🔄 Versão: 2.0 (Toque para atualizar)
+  </small>
+</div>
   <div id="secaoSaida" class="form-section section-saida">
   <h3>INICIAR VIAGEM</h3>
   <form id="formSaida">
@@ -226,7 +230,18 @@ setInterval(buscarNovasMensagens, 300000);
     checkMensagens();
   }
 };
-
+// Verifica se há uma nova versão e recarrega o app
+function forçarAtualizacao() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      for (let registration of registrations) {
+        registration.update();
+      }
+    });
+  }
+  // Recarrega a página limpando o cache
+  location.reload(true);
+}
   
   // 5. Lógica de Saída
 document.getElementById('formSaida').onsubmit = async (e) => {
