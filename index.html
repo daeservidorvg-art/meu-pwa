@@ -36,6 +36,9 @@
 <div class="container">
   <h2>Registro de Hodômetro</h2>
   <div id="status" class="status">📍 Viagem Iniciada...</div>
+  <div id="caixaAviso" style="display:none; background:#fff3cd; color:#856404; padding:15px; margin:10px; border-radius:8px; border:1px solid #ffeeba; font-weight:bold; text-align:center;">
+  ⚠️ AVISO: <span id="textoAviso"></span>
+  </div>
 
   <div id="secaoSaida" class="form-section section-saida">
   <h3>INICIAR VIAGEM</h3>
@@ -182,6 +185,30 @@ async function enviarDados(dados) {
     body: JSON.stringify(dados)
   });
 }
+
+  function buscarNovasMensagens() {
+  const placa = localStorage.getItem('viagemAtiva');
+  if (!placa) return;
+
+  google.script.run
+    .withSuccessHandler(msg => {
+      const caixa = document.getElementById('caixaAviso');
+      const texto = document.getElementById('textoAviso');
+      
+      if (msg && msg.trim() !== "") {
+        texto.innerText = msg;
+        caixa.style.display = 'block';
+        // Opcional: faz o celular vibrar para avisar que chegou mensagem
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } else {
+        caixa.style.display = 'none';
+      }
+    })
+    .verificarMensagem(placa);
+}
+
+// Inicia a checagem a cada 5 minutos
+setInterval(buscarNovasMensagens, 300000);
 
 // 5. Lógica de Saída
 document.getElementById('formSaida').onsubmit = async (e) => {
