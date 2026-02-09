@@ -4,57 +4,48 @@
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Diário de Bordo">
-  <link rel="apple-touch-icon" href="https://daevg.com.br/favicon.png">
-
+  <title>Diário de Bordo - DAE</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background-color: #f4f4f4; display: flex; flex-direction: column; align-items: center; min-height: calc(100vh - 40px); justify-content: flex-start; }
-    .logo { max-width: 120px; height: auto; margin-bottom: 15px; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background-color: #f4f4f4; display: flex; flex-direction: column; align-items: center; }
+    .logo { max-width: 120px; margin-bottom: 15px; }
     .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px; width: 100%; box-sizing: border-box; }
     h2 { text-align: center; color: #333; margin-bottom: 20px; font-size: 20px; }
-    .form-section { border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 10px; background-color: #f9f9f9; }
-    .form-section h3 { margin-top: 0; color: #555; border-bottom: 2px solid #007bff; padding-bottom: 5px; font-size: 16px; }
-    .section-saida h3 { border-bottom-color: #4CAF50; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; color: #007bff; font-size: 13px; }
-    .section-saida label { color: #4CAF50; }
-    input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-    button { background-color: #4CAF50; color: white; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; font-weight: bold; }
-    #btnRetorno { background-color: #007bff; }
-    button:disabled { background-color: #ccc !important; }
     
-    #installBanner { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #007bff; color: #fff; padding: 12px; border-radius: 10px; display: none; justify-content: space-between; align-items: center; z-index: 9999; }
-    #installBanner button { background: #fff; color: #007bff; border: 0; padding: 6px 10px; border-radius: 6px; font-weight: bold; width: auto; }
-
-    /* Caixa de Aviso da Planilha */
-    #caixaAviso { display: none; background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeeba; font-weight: bold; text-align: center; width: 100%; box-sizing: border-box; animation: pulse 2s infinite; }
+    /* Caixa de Aviso Animada */
+    #caixaAviso { display: none; background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeeba; font-weight: bold; text-align: center; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-    .status-gps { display: none; background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px; border-left: 4px solid #4caf50; font-weight: bold; width: 100%; text-align: center; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; color: #007bff; font-size: 13px; }
-    input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+    /* Status do GPS */
+    #statusGPS { display: none; background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px; border-left: 4px solid #4caf50; font-weight: bold; width: 100%; text-align: center; }
     
+    .form-section { border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 10px; background-color: #f9f9f9; width: 100%; box-sizing: border-box; }
+    .form-section h3 { margin-top: 0; color: #555; border-bottom: 2px solid #007bff; padding-bottom: 5px; font-size: 16px; }
+    
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #007bff; font-size: 13px; }
+    input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+    button { background-color: #4CAF50; color: white; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; font-weight: bold; }
+    #btnRetorno { background-color: #007bff; }
+    button:disabled { background-color: #ccc; }
   </style>
 </head>
-
 <body>
+
 <img src="https://daevg.com.br/assets/dae-logo.svg" class="logo">
+
 <div class="container">
   <h2>Registro de Hodômetro</h2>
-  <div id="caixaAviso" style="display:none;">⚠️MSG <span id="textoAviso"></span></div>
-  <div id="statusGPS" style="display:none;">📍 Viagem Iniciada... <span id="contPonto">0</span></div>
- 
   
-</div>
-  <div id="secaoSaida" class="form-section section-saida">
-  <h3>INICIAR VIAGEM</h3>
-  <form id="formSaida">
-    <label for="dataSaida">Data</label>   <input type="date" id="dataSaida" required>
-    <label for="veiculoSaida">Veículo</label>   <select id="veiculoSaida" required>
-      <option value="" disabled selected>Selecione</option>
-      <option value="" disabled selected>Selecione</option>
+  <div id="caixaAviso">⚠️ MENSAGEM: <span id="textoAviso"></span></div>
+  
+  <div id="statusGPS">📍 Rastreando: <span id="contPonto">0</span> pontos salvos</div>
+
+  <div id="secaoSaida" class="form-section">
+    <h3 style="border-bottom-color: #4CAF50;">INICIAR VIAGEM</h3>
+    <form id="formSaida">
+      <label>Data</label><input type="date" id="dataSaida" required>
+      <label>Veículo</label>
+      <select id="veiculoSaida" required>
+        <option value="" disabled selected>Selecione</option>
         <option value="QPD8801">QPD8801</option> <option value="SPH9D40">SPH9D40</option>
         <option value="SPH9D50">SPH9D50</option> <option value="SPI0E08">SPI0E08</option>
         <option value="SPI0E88">SPI0E88</option> <option value="SPI0E98">SPI0E98</option>
@@ -84,56 +75,54 @@
         <option value="SPQ5C67">SPQ5C67</option> <option value="SPQ5E97">SPQ5E97</option>
         <option value="SPQ6G69">SPQ6G69</option> <option value="SQC3D93">SQC3D93</option>
         <option value="SQC3E33">SQC3E33</option> <option value="SQC3E43">SQC3E43</option>
-        <option value="SQF0G23">SQF0G23</option> <option value="SWM0D51">SWM0D51</option>    
-        </select>
-
-    <label for="motoristaSaida">Motorista</label>    <input id="motoristaSaida" required>
-    <label for="destinoSaida">Destino</label>     <input id="destinoSaida" required>
-    <label for="horaSaida">Hora</label>     <input type="time" id="horaSaida" required>
-    <label for="hodometroSaida">Hodômetro Inicial</label>    <input type="number" id="hodometroSaida" required>
-    <button type="submit" id="btnSaida">Registrar Saída</button>
-  </form>
-</div>
+        <option value="SQF0G23">SQF0G23</option> <option value="SWM0D51">SWM0D51</option>  
+      </select>
+      <label>Motorista</label><input id="motoristaSaida" required>
+      <label>Destino</label><input id="destinoSaida" required>
+      <label>Hora</label><input type="time" id="horaSaida" required>
+      <label>Hodômetro Inicial</label><input type="number" id="hodometroSaida" required>
+      <button type="submit" id="btnSaida">Registrar Saída</button>
+    </form>
+  </div>
 
   <div id="secaoRetorno" class="form-section" style="display:none">
-  <h3>FINALIZE A VIAGEM</h3>
-  <form id="formRetorno">
-    <label for="dataRetorno">Data</label>     <input type="date" id="dataRetorno" required>
-    <label for="horaRetorno">Hora</label>    <input type="time" id="horaRetorno" required>
-    <label for="hodometroRetorno">Hodômetro Final</label>    <input type="number" id="hodometroRetorno" required>
-    <button type="submit" id="btnRetorno">Registrar Retorno</button>
-  </form>
- </div>
-<div style="text-align:center; margin-top:20px;">
-    <small style="color:#999; cursor:pointer;" onclick="forçarAtualizacao()">
-      🔄 Versão 2.0 (Toque para atualizar)
+    <h3>FINALIZE A VIAGEM</h3>
+    <form id="formRetorno">
+      <label>Data</label><input type="date" id="dataRetorno" required>
+      <label>Hora</label><input type="time" id="horaRetorno" required>
+      <label>Hodômetro Final</label><input type="number" id="hodometroRetorno" required>
+      <button type="submit" id="btnRetorno">Registrar Retorno</button>
+    </form>
+  </div>
+
+  <div style="text-align:center; margin-top:20px;">
+    <small style="color:#999; cursor:pointer;" onclick="location.reload(true)">
+      🔄 Versão 2.5 (Toque para atualizar)
     </small>
   </div>
-<div id="installBanner">
-  <span>📲 Instale o app para melhor funcionar</span>
-  <button id="btnInstall">Instalar</button>
 </div>
 
 <script>
 const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec";
 let watchId = null;
-let wakeLock = null;
 
-// 1. Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
-}
-
-// 2. Wake Lock
-// Manter tela ligada
-async function ativarWakeLock() {
-  if ('wakeLock' in navigator) {
-    try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+// Sincronizar Data e Hora Automática
+function atualizarRelogio() {
+  const agora = new Date();
+  const h = agora.toTimeString().slice(0,5);
+  const d = agora.toLocaleDateString('en-CA');
+  
+  if(document.getElementById('secaoSaida').style.display !== 'none'){
+    document.getElementById('dataSaida').value = d;
+    document.getElementById('horaSaida').value = h;
+  }
+  if(document.getElementById('secaoRetorno').style.display !== 'none'){
+    document.getElementById('dataRetorno').value = d;
+    document.getElementById('horaRetorno').value = h;
   }
 }
 
-// 3. Buscar Mensagens (Versão para GITHUB)
-// Buscar mensagem da Coluna N (via INTERFONE/FETCH)
+// Buscar Mensagens (GITHUB -> GOOGLE)
 function buscarMensagens() {
   const placa = localStorage.getItem('viagemAtiva');
   if (!placa) return;
@@ -149,35 +138,30 @@ function buscarMensagens() {
       } else {
         caixa.style.display = 'none';
       }
-    }).catch(e => console.log("Erro na mensagem"));
+    });
 }
- 
- 
-// 4. GPS / Rastreio
-// GPS e Contador
+
+// GPS
 function iniciarRastreio() {
   if (watchId) return;
-  ativarWakeLock();
   document.getElementById('statusGPS').style.display = 'block';
-
-  // Salva o primeiro ponto imediatamente
-  navigator.geolocation.getCurrentPosition(p => registrarPonto(p));
-
-  // Continua salvando a cada 2 minutos
+  
+  // Salva ponto a cada 2 minutos
   watchId = setInterval(() => {
-    navigator.geolocation.getCurrentPosition(p => registrarPonto(p), null, {enableHighAccuracy:true});
+    navigator.geolocation.getCurrentPosition(p => {
+      let rota = JSON.parse(localStorage.getItem('rota') || '[]');
+      rota.push({ lat: p.coords.latitude, lon: p.coords.longitude, t: Date.now() });
+      localStorage.setItem('rota', JSON.stringify(rota));
+      document.getElementById('contPonto').innerText = rota.length;
+    }, null, { enableHighAccuracy: true });
   }, 120000);
 
-  // Busca mensagens a cada 1 minuto
   setInterval(buscarMensagens, 60000);
 }
 
-  
-// 5. Inicialização correta
 window.onload = () => {
-  const agora = new Date();
-  const campoDataSaida = document.getElementById('dataSaida');
-  if(campoDataSaida) campoDataSaida.valueAsDate = agora;
+  atualizarRelogio();
+  setInterval(atualizarRelogio, 1000);
 
   const placaAtiva = localStorage.getItem('viagemAtiva');
   if (placaAtiva) {
@@ -187,20 +171,9 @@ window.onload = () => {
     buscarMensagens();
   }
 };
-  
-  // Relógio em tempo real
-  setInterval(() => {
-    const h = new Date().toTimeString().slice(0,5);
-    if(document.getElementById('secaoSaida').style.display !== 'none') document.getElementById('horaSaida').value = h;
-    if(document.getElementById('secaoRetorno').style.display !== 'none') document.getElementById('horaRetorno').value = h;
-  }, 1000);
-};
 
-// 6. Envio de Dados (POST)
-// Envio de formulários para o Google
-
-  //saída
-  document.getElementById('formSaida').onsubmit = async (e) => {
+// Envio Saída
+document.getElementById('formSaida').onsubmit = async (e) => {
   e.preventDefault();
   const btn = document.getElementById('btnSaida');
   btn.disabled = true;
@@ -212,21 +185,20 @@ window.onload = () => {
       veiculo: document.getElementById('veiculoSaida').value,
       motorista: document.getElementById('motoristaSaida').value,
       destino: document.getElementById('destinoSaida').value,
+      dataSaida: document.getElementById('dataSaida').value,
+      horaSaida: document.getElementById('horaSaida').value,
       hodometroSaida: document.getElementById('hodometroSaida').value,
-      localizacaoSaida: `${p.coords.latitude},${p.coords.longitude}`,
-      dataSaida: new Date().toLocaleDateString('en-CA'),
-      horaSaida: new Date().toTimeString().slice(0,5)
+      localizacaoSaida: `${p.coords.latitude},${p.coords.longitude}`
     };
-
     await fetch(URL_DO_SCRIPT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
     localStorage.setItem('viagemAtiva', dados.veiculo);
     localStorage.setItem('rota', '[]');
     location.reload();
   });
 };
-  
-  //retorno
-  document.getElementById('formRetorno').onsubmit = async (e) => {
+
+// Envio Retorno
+document.getElementById('formRetorno').onsubmit = async (e) => {
   e.preventDefault();
   const btn = document.getElementById('btnRetorno');
   btn.disabled = true;
@@ -235,20 +207,17 @@ window.onload = () => {
     const dados = {
       action: 'retorno',
       veiculo: localStorage.getItem('viagemAtiva'),
+      dataRetorno: document.getElementById('dataRetorno').value,
+      horaRetorno: document.getElementById('horaRetorno').value,
       hodometroRetorno: document.getElementById('hodometroRetorno').value,
       localizacaoRetorno: `${p.coords.latitude},${p.coords.longitude}`,
-      historicoRota: localStorage.getItem('rota') || '[]',
-      dataRetorno: new Date().toLocaleDateString('en-CA'),
-      horaRetorno: new Date().toTimeString().slice(0,5)
+      historicoRota: localStorage.getItem('rota') || '[]'
     };
-
     await fetch(URL_DO_SCRIPT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
     localStorage.clear();
     location.reload();
   });
 };
-
-
 
 // 7. PWA Install (Android)
 let deferredPrompt;
