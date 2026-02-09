@@ -1,11 +1,10 @@
 {
-  "name": "Transporte DAE",
+  "name": "Diário de Bordo DAE",
   "short_name": "Diário de Bordo",
+  "start_url": "index.html",
   "display": "standalone",
-  "start_url": "./",
-  "scope": "./",
   "background_color": "#ffffff",
-  "theme_color": "#007bff",
+  "theme_color": "#4CAF50",
   "icons": [
     {
       "src": "https://daevg.com.br/favicon.png",
