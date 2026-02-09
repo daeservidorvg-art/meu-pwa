@@ -132,32 +132,44 @@ function atualizarRelogio() {
     document.getElementById('horaRetorno').value = h;
   }
 }
- // Buscar Mensagens (GITHUB -> GOOGLE)
-function buscarMensagens() {
+ 
+  // Buscar Mensagens (GITHUB -> GOOGLE)
+  function buscarMensagens() {
   const placa = localStorage.getItem('viagemAtiva');
   if (!placa) return;
 
-  // Adicionamos um carimbo de tempo (cache-buster) para o celular não ler mensagem velha
-  const urlFinal = URL_DO_SCRIPT + "?getMensagem=" + placa + "&t=" + new Date().getTime();
+  // O 't=' garante que o celular peça uma mensagem NOVA toda vez
+  const urlComCacheBuster = URL_DO_SCRIPT + "?getMensagem=" + encodeURIComponent(placa) + "&t=" + new Date().getTime();
 
-  fetch(urlFinal)
-    .then(r => r.text())
+  fetch(urlComCacheBuster, {
+    method: 'GET',
+    mode: 'cors', // Força o modo de compartilhamento entre sites
+    headers: { 'Content-Type': 'text/plain' }
+  })
+    .then(response => {
+      if (!response.ok) throw new Error('Erro na rede');
+      return response.text();
+    })
     .then(msg => {
       const caixa = document.getElementById('caixaAviso');
       const texto = document.getElementById('textoAviso');
       
-      // Filtra para não mostrar erros de HTML do Google
-      if (msg && msg.trim() !== "" && !msg.includes("<!DOCTYPE")) {
-        texto.innerText = msg;
+      // Limpa espaços e verifica se não é um erro do Google (HTML)
+      const mensagemLimpa = msg.trim();
+      
+      if (mensagemLimpa !== "" && !mensagemLimpa.includes("<!DOCTYPE") && mensagemLimpa !== "undefined") {
+        texto.innerText = mensagemLimpa;
         caixa.style.display = 'block';
-        console.log("Mensagem recebida: " + msg);
+        console.log("Mensagem atualizada: " + mensagemLimpa);
       } else {
         caixa.style.display = 'none';
       }
     })
-    .catch(e => console.error("Erro ao buscar mensagem no GitHub:", e));
+    .catch(error => {
+      console.error("Falha ao buscar mensagem:", error);
+    });
 }
-  // GPS
+    // GPS
 function iniciarRastreio() {
   if (watchId) return;
   document.getElementById('statusGPS').style.display = 'block';
