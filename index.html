@@ -38,18 +38,19 @@
   </style>
 </head>
 <body>
-
 <img src="https://daevg.com.br/assets/dae-logo.svg" class="logo">
 
-<div class="container">
-  <h2>Registro de Hodômetro</h2>
-  
-  <div id="caixaAviso">⚠️ MENSAGEM: <span id="textoAviso"></span></div>
-  
-  <div id="statusGPS">📍 Rastreando: <span id="contPonto">0</span> pontos salvos</div>
+<div id="status" class="status">📍 Viagem Iniciada... GPS Ativo</div>
 
-  <div id="secaoSaida" class="form-section">
-    <h3 style="border-bottom-color: #4CAF50;">INICIAR VIAGEM</h3>
+<div class="container">
+  
+  <h2>Registro de Hodômetro</h2>
+  <div id="caixaAviso" style="display:none;">⚠️MSG:  <span id="textoAviso"></span></div>
+  <div id="statusGPS" style="display:none;">📍 Viagem Iniciada... <span id="contPonto">0</span></div>
+
+
+  <div id="secaoSaida" class="form-section section-saida">
+    <h3>INICIAR VIAGEM</h3>
     <form id="formSaida">
       <label>Data</label><input type="date" id="dataSaida" required>
       <label>Veículo</label>
@@ -84,7 +85,7 @@
         <option value="SPQ5C67">SPQ5C67</option> <option value="SPQ5E97">SPQ5E97</option>
         <option value="SPQ6G69">SPQ6G69</option> <option value="SQC3D93">SQC3D93</option>
         <option value="SQC3E33">SQC3E33</option> <option value="SQC3E43">SQC3E43</option>
-        <option value="SQF0G23">SQF0G23</option> <option value="SWM0D51">SWM0D51</option>  
+        <option value="SQF0G23">SQF0G23</option> <option value="SWM0D51">SWM0D51</option>
       </select>
       <label>Motorista</label><input id="motoristaSaida" required>
       <label>Destino</label><input id="destinoSaida" required>
@@ -95,7 +96,7 @@
   </div>
 
   <div id="secaoRetorno" class="form-section" style="display:none">
-    <h3>FINALIZE A VIAGEM</h3>
+    <h3>FINALIZAR VIAGEM</h3>
     <form id="formRetorno">
       <label>Data</label><input type="date" id="dataRetorno" required>
       <label>Hora</label><input type="time" id="horaRetorno" required>
@@ -103,6 +104,7 @@
       <button type="submit" id="btnRetorno">Registrar Retorno</button>
     </form>
   </div>
+</div>
 
   <div style="text-align:center; margin-top:20px;">
     <small style="color:#999; cursor:pointer;" onclick="location.reload(true)">
