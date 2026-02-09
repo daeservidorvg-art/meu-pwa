@@ -115,17 +115,26 @@
 
 <script>
 const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec";
+let watchId = null;
 
-// Função unificada para buscar mensagens e atualizar contador
-function rotinaApp() {
+// 1. Atualiza Data e Hora automaticamente
+function atualizarRelogio() {
+  const agora = new Date();
+  const h = agora.toTimeString().slice(0,5);
+  const d = agora.toLocaleDateString('en-CA');
+  
+  if(document.getElementById('dataSaida')) document.getElementById('dataSaida').value = d;
+  if(document.getElementById('horaSaida')) document.getElementById('horaSaida').value = h;
+  if(document.getElementById('dataRetorno')) document.getElementById('dataRetorno').value = d;
+  if(document.getElementById('horaRetorno')) document.getElementById('horaRetorno').value = h;
+}
+
+// 2. Busca Mensagens (Anti-Cache)
+function buscarMensagens() {
   const placa = localStorage.getItem('viagemAtiva');
   if (!placa) return;
 
-  // Mostra a barra de GPS
-  document.getElementById('statusGPS').style.display = 'block';
-
-  // Busca mensagem na Coluna N usando técnica Anti-Bloqueio
-  fetch(URL_DO_SCRIPT + "?getMensagem=" + encodeURIComponent(placa) + "&nocache=" + Date.now())
+  fetch(`${URL_DO_SCRIPT}?getMensagem=${encodeURIComponent(placa)}&t=${Date.now()}`)
     .then(r => r.text())
     .then(msg => {
       const caixa = document.getElementById('caixaAviso');
@@ -136,43 +145,37 @@ function rotinaApp() {
       } else {
         caixa.style.display = 'none';
       }
-    }).catch(e => console.log("Erro na rede"));
+    }).catch(() => console.log("Erro ao buscar MSG"));
 }
 
-// Inicia GPS e Mensagens
-function iniciarTudo() {
-  // Primeiro ponto imediato
-  navigator.geolocation.getCurrentPosition(p => registrarPonto(p));
-  
-  // Rotina de GPS (2 min) e Mensagens (1 min)
-  setInterval(() => {
-    navigator.geolocation.getCurrentPosition(p => registrarPonto(p));
-  }, 120000);
-  
-  setInterval(rotinaApp, 60000);
-  rotinaApp(); 
-}
-
+// 3. GPS e Contador
 function registrarPonto(p) {
   let rota = JSON.parse(localStorage.getItem('rota') || '[]');
   rota.push({ lat: p.coords.latitude, lon: p.coords.longitude, t: Date.now() });
   localStorage.setItem('rota', JSON.stringify(rota));
   document.getElementById('contPonto').innerText = rota.length;
 }
-  
-  
- 
+
+function iniciarTudo() {
+  document.getElementById('statusGPS').style.display = 'block';
+  // Ponto inicial
+  navigator.geolocation.getCurrentPosition(registrarPonto, null, {enableHighAccuracy:true});
+  // Repete a cada 2 min
+  watchId = setInterval(() => {
+    navigator.geolocation.getCurrentPosition(registrarPonto, null, {enableHighAccuracy:true});
+  }, 120000);
+  // Busca mensagens a cada 1 min
+  setInterval(buscarMensagens, 60000);
+  buscarMensagens();
+}
 
 window.onload = () => {
   atualizarRelogio();
-  setInterval(atualizarRelogio, 1000);
-
   const placaAtiva = localStorage.getItem('viagemAtiva');
   if (placaAtiva) {
     document.getElementById('secaoSaida').style.display = 'none';
     document.getElementById('secaoRetorno').style.display = 'block';
-    iniciarRastreio();
-    buscarMensagens();
+    iniciarTudo();
   }
 };
 
@@ -180,8 +183,7 @@ window.onload = () => {
 document.getElementById('formSaida').onsubmit = async (e) => {
   e.preventDefault();
   const btn = document.getElementById('btnSaida');
-  btn.disabled = true;
-  btn.innerText = "Enviando...";
+  btn.disabled = true; btn.innerText = "Enviando...";
 
   navigator.geolocation.getCurrentPosition(async (p) => {
     const dados = {
@@ -198,10 +200,10 @@ document.getElementById('formSaida').onsubmit = async (e) => {
     localStorage.setItem('viagemAtiva', dados.veiculo);
     localStorage.setItem('rota', '[]');
     location.reload();
-  });
+  }, () => alert("Ligue o GPS!"), {enableHighAccuracy:true});
 };
 
-// Envio Retorno
+// Envio Retorno (Igual à Saída)
 document.getElementById('formRetorno').onsubmit = async (e) => {
   e.preventDefault();
   const btn = document.getElementById('btnRetorno');
@@ -220,10 +222,10 @@ document.getElementById('formRetorno').onsubmit = async (e) => {
     await fetch(URL_DO_SCRIPT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
     localStorage.clear();
     location.reload();
-  });
+  }, null, {enableHighAccuracy:true});
 };
 
-// 7. PWA Install (Android)
+  // 7. PWA Install (Android)
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
