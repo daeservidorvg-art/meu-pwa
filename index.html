@@ -115,77 +115,53 @@
 
 <script>
 const URL_DO_SCRIPT = "https://script.google.com/macros/s/AKfycbw_yZyKRoHMngAWnEmiCr95n6KNG-Us8-GXCu-CP9osR_cOQeWmKyC5XJ5BolHRMQiZ/exec";
-let watchId = null;
 
-// Sincronizar Data e Hora Automática
-function atualizarRelogio() {
-  const agora = new Date();
-  const h = agora.toTimeString().slice(0,5);
-  const d = agora.toLocaleDateString('en-CA');
-  
-  if(document.getElementById('secaoSaida').style.display !== 'none'){
-    document.getElementById('dataSaida').value = d;
-    document.getElementById('horaSaida').value = h;
-  }
-  if(document.getElementById('secaoRetorno').style.display !== 'none'){
-    document.getElementById('dataRetorno').value = d;
-    document.getElementById('horaRetorno').value = h;
-  }
-}
- 
-  // Buscar Mensagens (GITHUB -> GOOGLE)
-  function buscarMensagens() {
+// Função unificada para buscar mensagens e atualizar contador
+function rotinaApp() {
   const placa = localStorage.getItem('viagemAtiva');
   if (!placa) return;
 
-  // O 't=' garante que o celular peça uma mensagem NOVA toda vez
-  const urlComCacheBuster = URL_DO_SCRIPT + "?getMensagem=" + encodeURIComponent(placa) + "&t=" + new Date().getTime();
+  // Mostra a barra de GPS
+  document.getElementById('statusGPS').style.display = 'block';
 
-  fetch(urlComCacheBuster, {
-    method: 'GET',
-    mode: 'cors', // Força o modo de compartilhamento entre sites
-    headers: { 'Content-Type': 'text/plain' }
-  })
-    .then(response => {
-      if (!response.ok) throw new Error('Erro na rede');
-      return response.text();
-    })
+  // Busca mensagem na Coluna N usando técnica Anti-Bloqueio
+  fetch(URL_DO_SCRIPT + "?getMensagem=" + encodeURIComponent(placa) + "&nocache=" + Date.now())
+    .then(r => r.text())
     .then(msg => {
       const caixa = document.getElementById('caixaAviso');
       const texto = document.getElementById('textoAviso');
-      
-      // Limpa espaços e verifica se não é um erro do Google (HTML)
-      const mensagemLimpa = msg.trim();
-      
-      if (mensagemLimpa !== "" && !mensagemLimpa.includes("<!DOCTYPE") && mensagemLimpa !== "undefined") {
-        texto.innerText = mensagemLimpa;
+      if (msg && msg.trim() !== "" && !msg.includes("<!DOCTYPE")) {
+        texto.innerText = msg;
         caixa.style.display = 'block';
-        console.log("Mensagem atualizada: " + mensagemLimpa);
       } else {
         caixa.style.display = 'none';
       }
-    })
-    .catch(error => {
-      console.error("Falha ao buscar mensagem:", error);
-    });
+    }).catch(e => console.log("Erro na rede"));
 }
-    // GPS
-function iniciarRastreio() {
-  if (watchId) return;
-  document.getElementById('statusGPS').style.display = 'block';
-  
-  // Salva ponto a cada 2 minutos
-  watchId = setInterval(() => {
-    navigator.geolocation.getCurrentPosition(p => {
-      let rota = JSON.parse(localStorage.getItem('rota') || '[]');
-      rota.push({ lat: p.coords.latitude, lon: p.coords.longitude, t: Date.now() });
-      localStorage.setItem('rota', JSON.stringify(rota));
-      document.getElementById('contPonto').innerText = rota.length;
-    }, null, { enableHighAccuracy: true });
-  }, 120000);
 
-  setInterval(buscarMensagens, 60000);
+// Inicia GPS e Mensagens
+function iniciarTudo() {
+  // Primeiro ponto imediato
+  navigator.geolocation.getCurrentPosition(p => registrarPonto(p));
+  
+  // Rotina de GPS (2 min) e Mensagens (1 min)
+  setInterval(() => {
+    navigator.geolocation.getCurrentPosition(p => registrarPonto(p));
+  }, 120000);
+  
+  setInterval(rotinaApp, 60000);
+  rotinaApp(); 
 }
+
+function registrarPonto(p) {
+  let rota = JSON.parse(localStorage.getItem('rota') || '[]');
+  rota.push({ lat: p.coords.latitude, lon: p.coords.longitude, t: Date.now() });
+  localStorage.setItem('rota', JSON.stringify(rota));
+  document.getElementById('contPonto').innerText = rota.length;
+}
+  
+  
+ 
 
 window.onload = () => {
   atualizarRelogio();
