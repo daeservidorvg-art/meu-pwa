@@ -132,27 +132,32 @@ function atualizarRelogio() {
     document.getElementById('horaRetorno').value = h;
   }
 }
-
-// Buscar Mensagens (GITHUB -> GOOGLE)
+ // Buscar Mensagens (GITHUB -> GOOGLE)
 function buscarMensagens() {
   const placa = localStorage.getItem('viagemAtiva');
   if (!placa) return;
 
-  fetch(`${URL_DO_SCRIPT}?getMensagem=${placa}`)
+  // Adicionamos um carimbo de tempo (cache-buster) para o celular não ler mensagem velha
+  const urlFinal = URL_DO_SCRIPT + "?getMensagem=" + placa + "&t=" + new Date().getTime();
+
+  fetch(urlFinal)
     .then(r => r.text())
     .then(msg => {
       const caixa = document.getElementById('caixaAviso');
       const texto = document.getElementById('textoAviso');
+      
+      // Filtra para não mostrar erros de HTML do Google
       if (msg && msg.trim() !== "" && !msg.includes("<!DOCTYPE")) {
         texto.innerText = msg;
         caixa.style.display = 'block';
+        console.log("Mensagem recebida: " + msg);
       } else {
         caixa.style.display = 'none';
       }
-    });
+    })
+    .catch(e => console.error("Erro ao buscar mensagem no GitHub:", e));
 }
-
-// GPS
+  // GPS
 function iniciarRastreio() {
   if (watchId) return;
   document.getElementById('statusGPS').style.display = 'block';
