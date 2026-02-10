@@ -162,11 +162,41 @@ function buscarMensagens() {
 
 // 3. GPS e Contador
 function registrarPonto(p) {
+  const novaLat = p.coords.latitude;
+  const novaLon = p.coords.longitude;
+  
+  // Salva na Rota Geral (para o mapa)
   let rota = JSON.parse(localStorage.getItem('rota') || '[]');
-  rota.push({ lat: p.coords.latitude, lon: p.coords.longitude, t: Date.now() });
+  rota.push({ lat: novaLat, lon: novaLon, t: Date.now() });
   localStorage.setItem('rota', JSON.stringify(rota));
   document.getElementById('contPonto').innerText = rota.length;
+
+  // Lógica de Parada: Só salva se houver deslocamento > 100 metros do último ponto de parada
+  let paradas = JSON.parse(localStorage.getItem('paradas_temp') || '[]');
+  if (paradas.length > 0) {
+    const ultima = paradas[paradas.length - 1];
+    const dist = calcularDistancia(ultima.lat, ultima.lon, novaLat, novaLon);
+    if (dist < 0.1) return; // Se moveu menos de 100m, ignora (ainda está na mesma parada)
+  }
+
+  const agora = new Date();
+  paradas.push({
+    lat: novaLat,
+    lon: novaLon,
+    dataHora: agora.toLocaleDateString() + " " + agora.toLocaleTimeString().slice(0,5)
+  });
+  localStorage.setItem('paradas_temp', JSON.stringify(paradas));
 }
+
+// Cálculo de distância simples
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+  const R = 6371; 
+  const dLat = (lat2-lat1) * Math.PI / 180;
+  const dLon = (lon2-lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) ** 2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+ 
 
 function iniciarTudo() {
   document.getElementById('statusGPS').style.display = 'block';
@@ -220,6 +250,7 @@ document.getElementById('formRetorno').onsubmit = async (e) => {
   e.preventDefault();
   const btn = document.getElementById('btnRetorno');
   btn.disabled = true;
+  btn.innerText = "Sincronizando Dados...";
 
   navigator.geolocation.getCurrentPosition(async (p) => {
     const dados = {
@@ -229,15 +260,28 @@ document.getElementById('formRetorno').onsubmit = async (e) => {
       horaRetorno: document.getElementById('horaRetorno').value,
       hodometroRetorno: document.getElementById('hodometroRetorno').value,
       localizacaoRetorno: `${p.coords.latitude},${p.coords.longitude}`,
-      historicoRota: localStorage.getItem('rota') || '[]'
+      historicoRota: localStorage.getItem('rota') || '[]',
+      listaParadas: localStorage.getItem('paradas_temp') || '[]' // Envia a "Caixa Preta"
     };
-    await fetch(URL_DO_SCRIPT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
-    localStorage.clear();
-    location.reload();
-  }, null, {enableHighAccuracy:true});
-};
 
-  // 7. PWA Install (Android)
+    // Envio via POST
+    try {
+      await fetch(URL_DO_SCRIPT, { 
+        method: 'POST', 
+        mode: 'no-cors', 
+        body: JSON.stringify(dados) 
+      });
+      alert("Viagem Finalizada com Sucesso!");
+      localStorage.clear();
+      location.reload();
+    } catch (err) {
+      alert("Erro ao enviar. Verifique a internet.");
+      btn.disabled = false;
+    }
+  }, null, { enableHighAccuracy: true });
+};
+  
+    // 7. PWA Install (Android)
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
