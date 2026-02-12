@@ -45,6 +45,17 @@
     input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
   </style>
 </head>
+<audio id="somNotificacao" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+<style>
+  .msg-nova { animation: flash 1s infinite; }
+  @keyframes flash {
+    0% { background-color: #fff3cd; }
+    50% { background-color: #ffc107; }
+    100% { background-color: #fff3cd; }
+  }
+</style>
+  
 <body>
 <img src="https://daevg.com.br/assets/dae-logo.svg" class="logo">
 
